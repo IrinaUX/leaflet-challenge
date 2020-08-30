@@ -13,7 +13,7 @@ const myMap = L.map("map", {
 dark.addTo(myMap);
 
 function getColor(sig) {
-  return sig > 1000 ? 'darkredv' :
+  return sig > 1000 ? 'darkred' :
     sig > 750  ? 'crimson' :
     sig > 500  ? 'salmon' :
     sig > 250  ? 'peachpuff' :
@@ -60,7 +60,7 @@ legend.onAdd = function(myMap) {
   var div = L.DomUtil.create('div', 'legend');
   var labels = ["0-250",  "250-500", "500-750", "750-1000", "1000+"];
   var grades = [250, 251, 501, 751, 1000];
-  div.innerHTML = '<div><br>EQ Significance</br></div>';
+  div.innerHTML = '<div><br>EQ Significance</br><br></div>';
   for(var i = 0; i < grades.length; i++) {
     div.innerHTML += "<i style='background:" + getColor(grades[i])
     + "'>&nbsp;&nbsp;</i>" + labels[i] + '<br/>';
