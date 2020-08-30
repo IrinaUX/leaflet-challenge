@@ -3,7 +3,7 @@
 // Creating map object
 const myMap = L.map("map", {
   center: [34.0522, -118.2437],
-  zoom: 3
+  zoom: 5
 });
 
 // // Adding tile layer
@@ -24,52 +24,57 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 }).addTo(myMap);
 
 // Add function for circle marker size and color
-function myStyle(entry) {
-  let color;
-  let marker_size;
-  if (entry.properties.mag > 1000) {
-    color = 'red',
-    marker_size = entry.properties.mag * 10000
-  }
-
-  return color, marker_size;  
-}
+// function myStyle(entry) {
+//   let color;
+//   let marker_size;
+//   if (entry.properties.mag < 3) {
+//     color = 'red',
+//     marker_size = entry.properties.mag * 1000
+//   }
+//   return color; //, marker_size;  
+// }
 
 // Load in GeoJson data
 const url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_month.geojson";
 
 // Grab data with d3
 d3.json(url).then(jsonData => {
-  console.log(jsonData);
+  // console.log(jsonData);
   const features = jsonData.features;
   console.log(features);
-  // L.geoJson(jsonData.features.properties.mag).addTo(myMap);
-  features.forEach(feature => {
-    // console.log(feature);
+  max_mag = 0;
+  features.forEach(feature => {  
     // console.log(feature.properties.mag);
+    if (feature.properties.mag > max_mag) {max_mag = feature.properties.mag}
+    const location_sliced = feature.geometry.coordinates.slice(0, 2);
+    const location = location_sliced.reverse();
+    const mag = feature.properties.mag;
+    const sig = feature.properties.sig;
 
-    // Add while circles for all locations
+    let color = "";
+    if (feature.properties.sig > 1000) {color = "darkred"}
+    else if (feature.properties.sig > 750) {color = 'firebrick'}
+    else if (feature.properties.sig > 500) {color = 'lightcoral'}
+    else if (feature.properties.sig > 250) {color = 'lightsalmon'}
+    else {color = 'white'}
 
-// Create a new choropleth layer
-const location_sliced = feature.geometry.coordinates.slice(0, 2);
-const location = location_sliced.reverse();
-console.log(location);
-L.circle(location, {
-  // Define what  property in the features to use
-  valueProperty: 'mag', // which property in the features to use
-  scale: ['white', 'pink', 'green', 'blue', 'red'], // chroma.js scale - include as many as you like
-  steps: 5, // number of breaks or steps in range
-  mode: 'q', // q for quantile, e for equidistant, k for k-means
-  style: {
-    color: '#fff', // border color
-    weight: 2,
-    fillOpacity: 0.8
-  }
-  // , onEachFeature: function(feature, layer) {
-  //   layer.bindPopup(`Population Density: ${feature.properties.Pop_Den}`)
-  // }
-}).addTo(myMap)
-})
+    let radius;
+    if (feature.properties.mag > 2) {radius = feature.properties.mag * 20000}
+    else {radius = 200}
+
+    L.circle(location, {
+      weight: 0,
+      fillColor: color,
+      radius: radius
+      // radius: mag * 15000,
+    })
+    .bindPopup("<h2>Earthquake: " + feature.properties.place + "</h2><hr><h3>Time: " + 
+        feature.properties.time + "</h3><hr><h3>Magnitude: " + 
+        feature.properties.mag + "</h3><hr><h3>Significance: "+ 
+        feature.properties.sig + "</h3>")
+    .addTo(myMap)
+    console.log(max_mag);
+  })
 })
 
 
