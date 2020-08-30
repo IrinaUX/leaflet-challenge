@@ -1,4 +1,3 @@
-
 const dark = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
   id: "dark-v10",
@@ -14,9 +13,9 @@ const myMap = L.map("map", {
 dark.addTo(myMap);
 
 function getColor(sig) {
-  return sig > 1000 ? '#8B0000' :
-    sig > 750  ? '#CD5C5C' :
-    sig > 500  ? 'darksalmon' :
+  return sig > 1000 ? 'darkredv' :
+    sig > 750  ? 'crimson' :
+    sig > 500  ? 'salmon' :
     sig > 250  ? 'peachpuff' :
                  'white';
 }
@@ -36,15 +35,15 @@ d3.json(url).then(jsonData => {
     let sig = feature.properties.sig;
     let timestamp = feature.properties.time;
     let myDate = new Date(timestamp);
-
  
     let radius = 0;
       if (mag > 4.2) {radius = mag * 10000}
-      else {radius = 800}
+      // else {radius == 800}
 
     const newFeature = L.circle(location, {
-      weight: 0,
-      fillColor: getColor(feature.properties.sig),
+      weight: .5,
+      color: getColor(sig),
+      fillOpacity: 0.7,
       radius: radius
     });
     

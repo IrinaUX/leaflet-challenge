@@ -30,3 +30,7 @@ body {
     margin: 0 8px 0 0;
   }
 
+  .legend title {
+    padding-bottom: 20px;
+  }
+
