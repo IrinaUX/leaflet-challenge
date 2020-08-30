@@ -1,111 +1,72 @@
-// const { getgroups } = require("process");
 
-// const { time } = require("console");
+const dark = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+  id: "dark-v10",
+  accessToken: API_KEY
+});
 
 // Creating map object
 const myMap = L.map("map", {
-  center: [34.0522, -118.2437],
-  zoom: 5
+  center: [36.4786667,-117.5141667],
+  zoom: 6
 });
 
-// // Adding tile layer
-// L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-//   attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
-//   tileSize: 512,
-//   maxZoom: 18,
-//   zoomOffset: -1,
-//   id: "mapbox/streets-v11",
-//   accessToken: API_KEY
-// }).addTo(myMap);
-// Adding tile layer
-L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-  maxZoom: 18,
-  id: "mapbox/streets-v11",
-  accessToken: API_KEY
-}).addTo(myMap);
+dark.addTo(myMap);
 
-// Add function for circle marker size and color
-// function myStyle(entry) {
-//   let color;
-//   let marker_size;
-//   if (entry.properties.mag < 3) {
-//     color = 'red',
-//     marker_size = entry.properties.mag * 1000
-//   }
-//   return color; //, marker_size;  
-// }
+function getColor(sig) {
+  return sig > 1000 ? '#8B0000' :
+    sig > 750  ? '#CD5C5C' :
+    sig > 500  ? 'darksalmon' :
+    sig > 250  ? 'peachpuff' :
+                 'white';
+}
 
 // Load in GeoJson data
 const url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_month.geojson";
 
 // Grab data with d3
 d3.json(url).then(jsonData => {
-  // console.log(jsonData);
   const features = jsonData.features;
-  console.log(features);
-  max_mag = 0;
   features.forEach(feature => {  
-    // console.log(feature.properties.mag);
-    if (feature.properties.mag > max_mag) {max_mag = feature.properties.mag}
-    const location_sliced = feature.geometry.coordinates.slice(0, 2);
-    const location = location_sliced.reverse();
-    const mag = feature.properties.mag;
-    const sig = feature.properties.sig;
+    let location_sliced = feature.geometry.coordinates.slice(0, 2);
+    let location = location_sliced.reverse();
+    let type = feature.properties.type;
+    let place = feature.properties.place;
+    let mag = feature.properties.mag;
+    let sig = feature.properties.sig;
+    let timestamp = feature.properties.time;
+    let myDate = new Date(timestamp);
 
-    let color = "";
-    if (feature.properties.sig > 1000) {color = "darkred"}
-    else if (feature.properties.sig > 750) {color = 'firebrick'}
-    else if (feature.properties.sig > 500) {color = 'lightcoral'}
-    else if (feature.properties.sig > 250) {color = 'lightsalmon'}
-    else {color = 'white'}
+ 
+    let radius = 0;
+      if (mag > 4.2) {radius = mag * 10000}
+      else {radius = 800}
 
-    let radius;
-    if (feature.properties.mag > 2) {radius = feature.properties.mag * 20000}
-    else {radius = 200}
-
-    var timestampMsec = feature.properties.time;
-    var myDate = new Date(timestampMsec);
-    
-    L.circle(location, {
+    const newFeature = L.circle(location, {
       weight: 0,
-      fillColor: color,
+      fillColor: getColor(feature.properties.sig),
       radius: radius
-      // radius: mag * 15000,
-    })
-    .bindPopup("<h3>" + (feature.properties.type) + ": " + feature.properties.place + "</h3><hr><h4>Time: " + 
-        myDate + "</h4><hr><h4>Magnitude: " + 
-        feature.properties.mag + "</h4><hr><h4>Significance: "+ 
-        feature.properties.sig + "</h4>") //, {maxWidth: 560}
+    });
+    
+    newFeature.bindPopup(`<h3>${type}: ${place}</h3><hr>
+      <h4>Time: ${myDate}</h4><hr>
+      <h4>Magnitude: ${mag}</h4><hr>
+      <h4>Significance: ${sig}</h4>`, {maxWidth: 560}) //
     .addTo(myMap)
-    console.log(max_mag);
   })
 })
 
+var legend = L.control({position: "bottomright"});
+legend.onAdd = function(myMap) {
+  var div = L.DomUtil.create('div', 'legend');
+  var labels = ["0-250",  "250-500", "500-750", "750-1000", "1000+"];
+  var grades = [250, 251, 501, 751, 1000];
+  div.innerHTML = '<div><br>EQ Significance</br></div>';
+  for(var i = 0; i < grades.length; i++) {
+    div.innerHTML += "<i style='background:" + getColor(grades[i])
+    + "'>&nbsp;&nbsp;</i>" + labels[i] + '<br/>';
+  }
+  return div;
+}
+legend.addTo(myMap);
 
-
-// Ad light and dark layouts
-// Define variables for our tile layers
-const light = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-  // maxZoom: 18,
-  id: "light-v10",
-  accessToken: API_KEY
-});
-
-const dark = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-  // maxZoom: 18,
-  id: "dark-v10",
-  accessToken: API_KEY
-});
-
-// Only one base layer can be shown at a time
-const baseMaps = {
-  Light: light,
-  Dark: dark
-};
-
-// Pass our map layers into our layer control
-// Add the layer control to the map
-L.control.layers(baseMaps).addTo(myMap);
