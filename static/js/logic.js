@@ -45,12 +45,12 @@ const myMap = L.map("map", {
 });
 
 const overlays = {
-  "Earthquake": layers.earthquakes,
-  "Quarry Blast": layers.quarry_blasts,
-  "Ice quake": layers.ice_quakes,
-  "Explosion": layers.explosions,
-  "Chemical Explosion": layers.chemical_explosions,
-  "Other Event": layers.other_events
+  "Earthquakes": layers.earthquakes,
+  "Quarry Blasts": layers.quarry_blasts,
+  "Ice quakes": layers.ice_quakes,
+  "Explosions": layers.explosions,
+  "Chemical Explosions": layers.chemical_explosions,
+  "Other Events": layers.other_events
 }
 
 dark.addTo(myMap);
