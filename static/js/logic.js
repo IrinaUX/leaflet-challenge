@@ -68,10 +68,10 @@ d3.json(url).then(jsonData => {
       radius: radius
       // radius: mag * 15000,
     })
-    .bindPopup("<h2>Earthquake: " + feature.properties.place + "</h2><hr><h3>Time: " + 
-        feature.properties.time + "</h3><hr><h3>Magnitude: " + 
-        feature.properties.mag + "</h3><hr><h3>Significance: "+ 
-        feature.properties.sig + "</h3>")
+    .bindPopup("<h3>" + (feature.properties.type) + ": " + feature.properties.place + "</h3><hr><h4>Time: " + 
+        feature.properties.time + "</h4><hr><h4>Magnitude: " + 
+        feature.properties.mag + "</h4><hr><h4>Significance: "+ 
+        feature.properties.sig + "</h4>") //, {maxWidth: 560}
     .addTo(myMap)
     console.log(max_mag);
   })
