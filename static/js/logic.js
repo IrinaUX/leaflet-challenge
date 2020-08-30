@@ -12,11 +12,46 @@ const light = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z
   accessToken: API_KEY
 });
 
+function getColor(sig) {
+  return sig > 1000 ? 'darkred' :
+    sig > 750  ? 'crimson' :
+    sig > 500  ? 'salmon' :
+    sig > 250  ? 'peachpuff' :
+                 'white';
+}
+
+// Add layers for different types of natural disaster
+const layers = {
+  earthquakes: new L.LayerGroup(),
+  quarry_blasts: new L.LayerGroup(),
+  ice_quakes: new L.LayerGroup(),
+  explosions: new L.LayerGroup(),
+  chemical_explosions: new L.LayerGroup(),
+  other_events: new L.LayerGroup()
+}
+
 // Creating map object
 const myMap = L.map("map", {
   center: [36.4786667,-117.5141667],
-  zoom: 3
+  zoom: 3,
+  layers: [
+    layers.earthquakes,
+    layers.quarry_blasts,
+    layers.ice_quakes,
+    layers.explosions,
+    layers.chemical_explosions,
+    layers.other_events
+  ]
 });
+
+const overlays = {
+  "Earthquake": layers.earthquakes,
+  "Quarry Blast": layers.quarry_blasts,
+  "Ice quake": layers.ice_quakes,
+  "Explosion": layers.explosions,
+  "Chemical Explosion": layers.chemical_explosions,
+  "Other Event": layers.other_events
+}
 
 dark.addTo(myMap);
 
@@ -28,15 +63,7 @@ const baseMaps = {
 
 // Pass our map layers into our layer control
 // Add the layer control to the map
-L.control.layers(baseMaps).addTo(myMap);
-
-function getColor(sig) {
-  return sig > 1000 ? 'darkred' :
-    sig > 750  ? 'crimson' :
-    sig > 500  ? 'salmon' :
-    sig > 250  ? 'peachpuff' :
-                 'white';
-}
+L.control.layers(baseMaps, overlays).addTo(myMap);
 
 // Load in GeoJson data
 const url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_month.geojson";
@@ -44,24 +71,58 @@ const url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_month
 // Grab data with d3
 d3.json(url).then(jsonData => {
   const features = jsonData.features;
-  features.forEach(feature => {  
+
+  // add control for layers
+  let featureType;
+
+  // // console.log(features);
+  // const earthquakes = features.filter(feature => feature.properties.type === "earthquake");
+  // const quarry_blasts = features.filter(feature => feature.properties.type === "quarry blast");
+  // const ice_quakes = features.filter(feature => feature.properties.type === "ice quake");
+  // const explosions = features.filter(feature => feature.properties.type === "explosion");
+  // const chemical_explosions = features.filter(feature => feature.properties.type === "chemical explosion");
+  // const other_events = features.filter(feature => feature.properties.type === "other event");
+
+  features.forEach((feature, i) => {  
     let location = (feature.geometry.coordinates.slice(0, 2)).reverse();
     let type = feature.properties.type;
+    // console.log(type);
     let place = feature.properties.place;
     let mag = feature.properties.mag;
     let sig = feature.properties.sig;
     let date = new Date(feature.properties.time);
- 
+    
     let radius = 0;
       if (mag > 4) {radius = mag * 40000}
-      // else {radius == 800}
+      
+    // const natural_event = Object.
+    // Object.assign({}, type);
 
+    // console.log(type);
+
+    if (type === "earthquake") {featureType = "earthquakes";}
+    else if (type === "quarry blast") {featureType = "quarry_blasts";}
+    else if (type === "ice quake") {featureType = "ice_quakes";}
+    else if (type === "explosion") {featureType = "explosions";}
+    else if (type === "chemical explosion") {featureType = "chemical_explosions";}
+    else {featureType = "other_events";}
+    // console.log(featureType);
+    
     const newFeature = L.circle(location, {
       weight: .5,
       color: getColor(sig),
       fillOpacity: 0.7,
       radius: radius
     });
+
+    newFeature.addTo(layers[featureType]);
+
+    // const newFeatureCircle = L.circle(location, {
+    //   weight: .5,
+    //   color: getColor(sig),
+    //   fillOpacity: 0.7,
+    //   radius: radius
+    // });
     
     newFeature.bindPopup(`<h3>${type}: ${place}</h3><hr>
       <h4>Time: ${date}</h4><hr>
@@ -83,5 +144,6 @@ legend.onAdd = function(myMap) {
   }
   return div;
 }
+
 legend.addTo(myMap);
 
