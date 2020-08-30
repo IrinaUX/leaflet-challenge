@@ -1,5 +1,7 @@
 // const { getgroups } = require("process");
 
+// const { time } = require("console");
+
 // Creating map object
 const myMap = L.map("map", {
   center: [34.0522, -118.2437],
@@ -62,6 +64,9 @@ d3.json(url).then(jsonData => {
     if (feature.properties.mag > 2) {radius = feature.properties.mag * 20000}
     else {radius = 200}
 
+    var timestampMsec = feature.properties.time;
+    var myDate = new Date(timestampMsec);
+    
     L.circle(location, {
       weight: 0,
       fillColor: color,
@@ -69,7 +74,7 @@ d3.json(url).then(jsonData => {
       // radius: mag * 15000,
     })
     .bindPopup("<h3>" + (feature.properties.type) + ": " + feature.properties.place + "</h3><hr><h4>Time: " + 
-        feature.properties.time + "</h4><hr><h4>Magnitude: " + 
+        myDate + "</h4><hr><h4>Magnitude: " + 
         feature.properties.mag + "</h4><hr><h4>Significance: "+ 
         feature.properties.sig + "</h4>") //, {maxWidth: 560}
     .addTo(myMap)
