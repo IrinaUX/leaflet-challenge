@@ -140,7 +140,7 @@ legend.onAdd = function(myMap) {
   var div = L.DomUtil.create('div', 'legend');
   var labels = ["0-250",  "250-500", "500-750", "750-1000", "1000+"];
   var grades = [250, 251, 501, 751, 1000];
-  div.innerHTML = '<div><br>EQ Significance</br><br></div>';
+  div.innerHTML = '<div class="legend-title">EQ Significance</br><hr></div>';
   for(var i = 0; i < grades.length; i++) {
     div.innerHTML += "<i style='background:" + getColor(grades[i])
     + "'>&nbsp;&nbsp;</i>" + labels[i] + '<br/>';
@@ -161,33 +161,6 @@ const myStyle_1to5 = {
   "weight": 2,
   "opacity": 1
 }
-
-
-
-
-// const jsonData = "static/data/qfaults_latest_quaternary.geojson";
-// // Grab data with d3
-// d3.json(jsonData).then(jsonData => {
-//   const all_features = jsonData.features;
-//   const features = all_features.filter( feature => feature.properties.slip_rate !== "Unspecified" && feature.properties.slip_rate !== null);
-//   const slip_over5 = features.filter(feature => feature.properties.slip_rate === "Greater than 5.0 mm/yr");
-//   const slip_1to5 = features.filter(feature => feature.properties.slip_rate === "Between 1.0 and 5.0 mm/yr");
-//   console.log(features);
-
-//   featureType = "faults";
-//   L.choropleth(jsonData, {
-//     // Define what  property in the features to use
-//     valueProperty: 'slip_rate', // which property in the features to use
-//     style: {
-//       color: 'green', // border color
-//       weight: 2
-//     },
-//     onEachFeature: function(feature, layer) {
-//       layer.bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
-//         <h4>Slip Rate${feature.properties.slip_rate}</h4>`)
-//     }
-//   }).addTo(layers[featureType]);
-//  });
 
 function getStyle(slip_rate){
   let weight;
