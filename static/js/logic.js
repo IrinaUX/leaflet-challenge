@@ -27,7 +27,8 @@ const layers = {
   ice_quakes: new L.LayerGroup(),
   explosions: new L.LayerGroup(),
   chemical_explosions: new L.LayerGroup(),
-  other_events: new L.LayerGroup()
+  other_events: new L.LayerGroup(),
+  faults: new L.LayerGroup()
 }
 
 // Creating map object
@@ -40,7 +41,8 @@ const myMap = L.map("map", {
     layers.ice_quakes,
     layers.explosions,
     layers.chemical_explosions,
-    layers.other_events
+    layers.other_events,
+    layers.faults
   ]
 });
 
@@ -50,7 +52,8 @@ const overlays = {
   "Ice quakes": layers.ice_quakes,
   "Explosions": layers.explosions,
   "Chemical Explosions": layers.chemical_explosions,
-  "Other Events": layers.other_events
+  "Other Events": layers.other_events,
+  "Faults": layers.faults
 }
 
 dark.addTo(myMap);
@@ -169,15 +172,53 @@ d3.json(jsonData).then(jsonData => {
   const features = all_features.filter( feature => feature.properties.slip_rate !== "Unspecified" && feature.properties.slip_rate !== null);
   const slip_over5 = features.filter(feature => feature.properties.slip_rate === "Greater than 5.0 mm/yr");
   const slip_1to5 = features.filter(feature => feature.properties.slip_rate === "Between 1.0 and 5.0 mm/yr");
-  console.log(slip_1to5);
+  console.log(features);
 
-  const faultLayer = L.geoJson(slip_1to5, myStyle_1to5).addTo(myMap)
-  faultLayer.onEachFeature  
-  function bindpopups(feature, layer) {
-    layer.bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
-    <h4>Slip Rate: ${feature.properties.slip_rate}</h4>`, {maxWidth: 560}).addTo(myMap)
-  };
-});
+  featureType = "faults";
+  L.choropleth(jsonData, {
+    // Define what  property in the features to use
+    valueProperty: 'slip_rate', // which property in the features to use
+    scale: ['white', 'red'], // chroma.js scale - include as many as you like
+    steps: 5, // number of breaks or steps in range
+    mode: 'q', // q for quantile, e for equidistant, k for k-means
+    style: {
+      color: 'green', // border color
+      weight: 2,
+      fillOpacity: 0.8
+    },
+    onEachFeature: function(feature, layer) {
+      layer.bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
+        <h4>Slip Rate${feature.properties.slip_rate}</h4>`)
+    }
+  }).addTo(layers[featureType]); //addTo(myMap)
+  // let featureTypeFault;
+  
+  slip_over5.forEach((feature, i) => {
+
+    
+    // console.log(featureType);
+    
+    // const newFeatureFault = L.circle(location, {
+    //   weight: .5,
+    //   fillOpacity: 0.7,
+    //   radius: radius
+    // });
+
+    // newFeatureFault.addTo(layers[featureType]);
+
+    // const newFeatureCircle = L.circle(location, {
+    //   weight: .5,
+    //   color: getColor(sig),
+    //   fillOpacity: 0.7,
+    //   radius: radius
+    // });
+    
+    // newFeatureFault.bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
+    // //   <h4>Slip Rate: ${feature.properties.slip_rate}</h4>`, {maxWidth: 560}) //
+    // .addTo(myMap)
+
+  })
+ });
 
 
 // .bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
