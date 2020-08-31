@@ -78,31 +78,17 @@ d3.json(url).then(jsonData => {
   // add control for layers
   let featureType;
 
-  // // console.log(features);
-  // const earthquakes = features.filter(feature => feature.properties.type === "earthquake");
-  // const quarry_blasts = features.filter(feature => feature.properties.type === "quarry blast");
-  // const ice_quakes = features.filter(feature => feature.properties.type === "ice quake");
-  // const explosions = features.filter(feature => feature.properties.type === "explosion");
-  // const chemical_explosions = features.filter(feature => feature.properties.type === "chemical explosion");
-  // const other_events = features.filter(feature => feature.properties.type === "other event");
-
   features.forEach((feature, i) => {  
     let location = (feature.geometry.coordinates.slice(0, 2)).reverse();
     let type = feature.properties.type;
-    // console.log(type);
     let place = feature.properties.place;
     let mag = feature.properties.mag;
     let sig = feature.properties.sig;
     let date = new Date(feature.properties.time);
     
     let radius = 0;
-      if (mag > 4) {radius = mag * 40000}
+      if (mag > 4) {radius = mag * 30000}
       
-    // const natural_event = Object.
-    // Object.assign({}, type);
-
-    // console.log(type);
-
     if (type === "earthquake") {featureType = "earthquakes";}
     else if (type === "quarry blast") {featureType = "quarry_blasts";}
     else if (type === "ice quake") {featureType = "ice_quakes";}
@@ -119,14 +105,6 @@ d3.json(url).then(jsonData => {
     });
 
     newFeature.addTo(layers[featureType]);
-
-    // const newFeatureCircle = L.circle(location, {
-    //   weight: .5,
-    //   color: getColor(sig),
-    //   fillOpacity: 0.7,
-    //   radius: radius
-    // });
-    
     newFeature.bindPopup(`<h3>${type}: ${place}</h3><hr>
       <h4>Time: ${date}</h4><hr>
       <h4>Magnitude: ${mag}</h4><hr>
@@ -151,17 +129,6 @@ legend.onAdd = function(myMap) {
 legend.addTo(myMap);
 let slips = [];
 
-const myStyle_over5 = {
-  "color": "green",
-  "weight": 4,
-  "opacity": 1
-}
-const myStyle_1to5 = {
-  "color": "green",
-  "weight": 2,
-  "opacity": 1
-}
-
 function getStyle(slip_rate){
   let weight;
   switch(slip_rate){
@@ -171,7 +138,7 @@ function getStyle(slip_rate){
         break;
       case "Between 1.0 and 5.0 mm/yr":
         weight = 2;
-        color = 'green';
+        color = 'salmon';
   }
   return {
       "weight": weight,
@@ -186,8 +153,7 @@ d3.json(jsonData).then(jsonData => {
   const features = all_features.filter( feature => feature.properties.slip_rate !== "Unspecified" && feature.properties.slip_rate !== null);
   const selected_slip_rates = features.filter(feature => feature.properties.slip_rate === "Greater than 5.0 mm/yr" || 
       feature.properties.slip_rate === "Between 1.0 and 5.0 mm/yr");
-  // console.log(selected_slip_rates);
-
+  
   featureType = "faults";
   L.geoJson(selected_slip_rates, {
     // Define what  property in the features to use
