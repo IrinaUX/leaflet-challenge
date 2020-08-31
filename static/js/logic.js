@@ -165,62 +165,69 @@ const myStyle_1to5 = {
 
 
 
-const jsonData = "static/data/qfaults_latest_quaternary.geojson";
+// const jsonData = "static/data/qfaults_latest_quaternary.geojson";
+// // Grab data with d3
+// d3.json(jsonData).then(jsonData => {
+//   const all_features = jsonData.features;
+//   const features = all_features.filter( feature => feature.properties.slip_rate !== "Unspecified" && feature.properties.slip_rate !== null);
+//   const slip_over5 = features.filter(feature => feature.properties.slip_rate === "Greater than 5.0 mm/yr");
+//   const slip_1to5 = features.filter(feature => feature.properties.slip_rate === "Between 1.0 and 5.0 mm/yr");
+//   console.log(features);
+
+//   featureType = "faults";
+//   L.choropleth(jsonData, {
+//     // Define what  property in the features to use
+//     valueProperty: 'slip_rate', // which property in the features to use
+//     style: {
+//       color: 'green', // border color
+//       weight: 2
+//     },
+//     onEachFeature: function(feature, layer) {
+//       layer.bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
+//         <h4>Slip Rate${feature.properties.slip_rate}</h4>`)
+//     }
+//   }).addTo(layers[featureType]);
+//  });
+
+function getStyle(slip_rate){
+  let weight;
+  switch(slip_rate){
+      case "Greater than 5.0 mm/yr":
+        weight = 4;
+        color = 'red';
+        break;
+      case "Between 1.0 and 5.0 mm/yr":
+        weight = 2;
+        color = 'green';
+  }
+  return {
+      "weight": weight,
+      "color": color
+  };
+}
+
+ const jsonData = "static/data/qfaults_latest_quaternary.geojson";
 // Grab data with d3
 d3.json(jsonData).then(jsonData => {
   const all_features = jsonData.features;
   const features = all_features.filter( feature => feature.properties.slip_rate !== "Unspecified" && feature.properties.slip_rate !== null);
-  const slip_over5 = features.filter(feature => feature.properties.slip_rate === "Greater than 5.0 mm/yr");
-  const slip_1to5 = features.filter(feature => feature.properties.slip_rate === "Between 1.0 and 5.0 mm/yr");
-  console.log(features);
+  const selected_slip_rates = features.filter(feature => feature.properties.slip_rate === "Greater than 5.0 mm/yr" || 
+      feature.properties.slip_rate === "Between 1.0 and 5.0 mm/yr");
+  // console.log(selected_slip_rates);
 
   featureType = "faults";
-  L.choropleth(jsonData, {
+  L.geoJson(selected_slip_rates, {
     // Define what  property in the features to use
     valueProperty: 'slip_rate', // which property in the features to use
-    scale: ['white', 'red'], // chroma.js scale - include as many as you like
-    steps: 5, // number of breaks or steps in range
-    mode: 'q', // q for quantile, e for equidistant, k for k-means
-    style: {
-      color: 'green', // border color
-      weight: 2,
-      fillOpacity: 0.8
+    style: function(feature) 
+    {
+      return getStyle(feature.properties.slip_rate);
     },
     onEachFeature: function(feature, layer) {
       layer.bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
         <h4>Slip Rate${feature.properties.slip_rate}</h4>`)
     }
-  }).addTo(layers[featureType]); //addTo(myMap)
-  // let featureTypeFault;
-  
-  slip_over5.forEach((feature, i) => {
-
-    
-    // console.log(featureType);
-    
-    // const newFeatureFault = L.circle(location, {
-    //   weight: .5,
-    //   fillOpacity: 0.7,
-    //   radius: radius
-    // });
-
-    // newFeatureFault.addTo(layers[featureType]);
-
-    // const newFeatureCircle = L.circle(location, {
-    //   weight: .5,
-    //   color: getColor(sig),
-    //   fillOpacity: 0.7,
-    //   radius: radius
-    // });
-    
-    // newFeatureFault.bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
-    // //   <h4>Slip Rate: ${feature.properties.slip_rate}</h4>`, {maxWidth: 560}) //
-    // .addTo(myMap)
-
-  })
+  }).addTo(layers[featureType]);
  });
 
-
-// .bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
-//       <h4>Slip Rate: ${feature.properties.slip_rate}</h4>`, {maxWidth: 560})
       
