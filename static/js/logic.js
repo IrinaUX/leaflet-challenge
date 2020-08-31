@@ -146,4 +146,40 @@ legend.onAdd = function(myMap) {
 }
 
 legend.addTo(myMap);
+let slips = [];
 
+const myStyle_over5 = {
+  "color": "green",
+  "weight": 4,
+  "opacity": 1
+}
+const myStyle_1to5 = {
+  "color": "green",
+  "weight": 2,
+  "opacity": 1
+}
+
+
+
+
+const jsonData = "static/data/qfaults_latest_quaternary.geojson";
+// Grab data with d3
+d3.json(jsonData).then(jsonData => {
+  const all_features = jsonData.features;
+  const features = all_features.filter( feature => feature.properties.slip_rate !== "Unspecified" && feature.properties.slip_rate !== null);
+  const slip_over5 = features.filter(feature => feature.properties.slip_rate === "Greater than 5.0 mm/yr");
+  const slip_1to5 = features.filter(feature => feature.properties.slip_rate === "Between 1.0 and 5.0 mm/yr");
+  console.log(slip_1to5);
+
+  const faultLayer = L.geoJson(slip_1to5, myStyle_1to5).addTo(myMap)
+  faultLayer.onEachFeature  
+  function bindpopups(feature, layer) {
+    layer.bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
+    <h4>Slip Rate: ${feature.properties.slip_rate}</h4>`, {maxWidth: 560}).addTo(myMap)
+  };
+});
+
+
+// .bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
+//       <h4>Slip Rate: ${feature.properties.slip_rate}</h4>`, {maxWidth: 560})
+      
