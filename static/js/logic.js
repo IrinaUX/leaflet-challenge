@@ -68,6 +68,7 @@ const baseMaps = {
 // Add the layer control to the map
 L.control.layers(baseMaps, overlays).addTo(myMap);
 
+// PART I - Different types of natural disasters
 // Load in GeoJson data
 const url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_month.geojson";
 
@@ -85,10 +86,12 @@ d3.json(url).then(jsonData => {
     let mag = feature.properties.mag;
     let sig = feature.properties.sig;
     let date = new Date(feature.properties.time);
-    
+   
+    // Increase the radius of earthquakes with magnitude over 4 
     let radius = 0;
       if (mag > 4) {radius = mag * 30000}
-      
+    
+    // assign feature type
     if (type === "earthquake") {featureType = "earthquakes";}
     else if (type === "quarry blast") {featureType = "quarry_blasts";}
     else if (type === "ice quake") {featureType = "ice_quakes";}
@@ -97,6 +100,7 @@ d3.json(url).then(jsonData => {
     else {featureType = "other_events";}
     // console.log(featureType);
     
+    // draw the data with custom colors and proportional circle radius
     const newFeature = L.circle(location, {
       weight: .5,
       color: getColor(sig),
@@ -104,6 +108,7 @@ d3.json(url).then(jsonData => {
       radius: radius
     });
 
+    // Add features to the layers according to their types
     newFeature.addTo(layers[featureType]);
     newFeature.bindPopup(`<h3>${type}: ${place}</h3><hr>
       <h4>Time: ${date}</h4><hr>
@@ -113,6 +118,7 @@ d3.json(url).then(jsonData => {
   })
 })
 
+// Create a legend in the bottom right corner for color pallet of EQ significances
 var legend = L.control({position: "bottomright"});
 legend.onAdd = function(myMap) {
   var div = L.DomUtil.create('div', 'legend');
@@ -126,9 +132,12 @@ legend.onAdd = function(myMap) {
   return div;
 }
 
+// Add legend to map
 legend.addTo(myMap);
-let slips = [];
 
+// PART II - second data set with faults data seems to only contain US data
+
+// function to change color of the fault based on the slip rate
 function getStyle(slip_rate){
   let weight;
   switch(slip_rate){
@@ -146,14 +155,16 @@ function getStyle(slip_rate){
   };
 }
 
- const jsonData = "static/data/qfaults_latest_quaternary.geojson";
+// Define the json data source
+const jsonData = "static/data/qfaults_latest_quaternary.geojson";
 // Grab data with d3
 d3.json(jsonData).then(jsonData => {
   const all_features = jsonData.features;
   const features = all_features.filter( feature => feature.properties.slip_rate !== "Unspecified" && feature.properties.slip_rate !== null);
-  const selected_slip_rates = features.filter(feature => feature.properties.slip_rate === "Greater than 5.0 mm/yr" || 
-      feature.properties.slip_rate === "Between 1.0 and 5.0 mm/yr");
+  const selected_slip_rates = features.filter(feature => feature.properties.slip_rate === "Greater than 5.0 mm/yr" 
+      || feature.properties.slip_rate === "Between 1.0 and 5.0 mm/yr");
   
+  // Assign feature type for the layer control
   featureType = "faults";
   L.geoJson(selected_slip_rates, {
     // Define what  property in the features to use
@@ -166,7 +177,7 @@ d3.json(jsonData).then(jsonData => {
       layer.bindPopup(`<h3>Fault: ${feature.properties.fault_name}</h3><hr>
         <h4>Slip Rate${feature.properties.slip_rate}</h4>`)
     }
-  }).addTo(layers[featureType]);
+  }).addTo(layers[featureType]); // add the layer
  });
 
       
